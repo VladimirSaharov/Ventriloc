@@ -7,4 +7,6 @@ frontend/node_modules/
 frontend/dist/
 *.tsbuildinfo
 DESIGN (1).md
+backend/tests/
+Описание кейса для участников.docx
 ~$*
