@@ -1,0 +1,108 @@
+@import "tailwindcss";
+
+@theme {
+  /* Ventriloc Palette */
+  --color-graphite: #202020;
+  --color-canvas-white: #ffffff;
+  --color-ash: #efefef;
+  --color-fog: #f5f5f5;
+  --color-ivory: #ebe6dd;
+  --color-steel: #4d4d4d;
+  --color-slate: #828282;
+  --color-mist: #e8e8e8;
+  --color-ember-orange: #ff682c;
+  --color-brass: #816729;
+
+  /* Typography */
+  --font-polysans: 'Inter Tight', ui-sans-serif, system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
+  --font-inter: 'Inter', ui-sans-serif, system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
+}
+
+@layer base {
+  html {
+    font-family: var(--font-inter);
+    color: var(--color-graphite);
+    background-color: var(--color-canvas-white);
+    scroll-behavior: smooth;
+  }
+
+  h1, h2, h3, h4, .font-display {
+    font-family: var(--font-polysans);
+    font-weight: 400;
+    letter-spacing: -0.02em;
+  }
+}
+
+.font-editorial {
+  font-family: var(--font-polysans);
+  font-weight: 400;
+  letter-spacing: -0.02em;
+}
+
+/* Three-Radius System */
+.btn-primary {
+  background-color: #202020;
+  color: #ffffff;
+  border-radius: 0px;
+  padding: 10px 20px;
+  font-family: var(--font-polysans);
+  font-weight: 400;
+  font-size: 16px;
+  line-height: 1;
+  letter-spacing: -0.02em;
+  transition: opacity 0.15s ease;
+  cursor: pointer;
+}
+
+.btn-primary:hover:not(:disabled) {
+  opacity: 0.86;
+}
+
+.btn-primary:disabled {
+  opacity: 0.45;
+  cursor: not-allowed;
+}
+
+.btn-ghost {
+  background-color: transparent;
+  color: #202020;
+  border: 1px solid #202020;
+  border-radius: 0px;
+  padding: 10px 20px;
+  font-family: var(--font-polysans);
+  font-weight: 400;
+  font-size: 16px;
+  line-height: 1;
+  letter-spacing: -0.02em;
+  transition: background-color 0.15s ease;
+  cursor: pointer;
+}
+
+.btn-ghost:hover:not(:disabled) {
+  background-color: #f5f5f5;
+}
+
+.btn-ghost:disabled {
+  opacity: 0.45;
+  cursor: not-allowed;
+}
+
+.card-asymmetric {
+  border-radius: 6px 0px 0px 0px;
+}
+
+.card-data {
+  border-radius: 20px;
+}
+
+.nav-pill {
+  background-color: #efefef;
+  border-radius: 200px;
+}
+
+.ember-underline {
+  text-decoration: underline;
+  text-decoration-color: #ff682c;
+  text-decoration-thickness: 1px;
+  text-underline-offset: 3px;
+}
