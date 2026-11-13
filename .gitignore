@@ -6,4 +6,5 @@ __pycache__/
 frontend/node_modules/
 frontend/dist/
 *.tsbuildinfo
+DESIGN (1).md
 ~$*
