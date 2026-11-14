@@ -166,3 +166,102 @@ export interface AnalysisResponse {
   failed_vacancies: DocumentErrorInfo[]
   markdown_report: string
 }
+
+export interface PublicVacancyInfo {
+  id: string
+  title: string
+  filename: string
+}
+
+export interface PublicApplyResponse {
+  submission_id: string
+  vacancy_id: string
+  vacancy_title: string
+  status: string
+  message: string
+}
+
+export interface AdminLoginResponse {
+  access_token: string
+  token_type: string
+  username: string
+}
+
+export interface VacancyRecord {
+  id: string
+  filename: string
+  title: string
+  is_active: boolean
+  created_at: string
+}
+
+export interface VacancySummaryItem {
+  id: string
+  filename: string
+  title: string
+  is_active: boolean
+  created_at: string
+  total_count: number
+  suitable_count: number
+  top_count: number
+  rejected_count: number
+  failed_count: number
+}
+
+export type ScreeningBucket = 'suitable' | 'rejected'
+
+export interface VacancyCandidateItem {
+  id: string
+  vacancy_id: string
+  vacancy_title: string
+  candidate_label: string
+  contact_info: string
+  comment: string
+  resume_filename: string
+  status: 'processing' | 'completed' | 'failed'
+  error_message: string
+  match_score: number | null
+  mandatory_score: number
+  fit_verdict: FitVerdict | null
+  screening_bucket: ScreeningBucket
+  is_top_resume: boolean
+  manual_override: boolean
+  system_recommended: boolean
+  target_role: string
+  summary: string
+  total_experience_months: number | null
+  skills_preview: string[]
+  full_count: number
+  partial_count: number
+  not_specified_count: number
+  no_match_count: number
+  total_requirements: number
+  created_at: string
+  processed_at: string | null
+}
+
+export interface HrVacancyCandidatesResponse {
+  vacancy: VacancySummaryItem
+  candidates: VacancyCandidateItem[]
+}
+
+export interface SubmissionDetailResponse {
+  id: string
+  vacancy_id: string | null
+  vacancy_title: string
+  candidate_label: string
+  contact_info: string
+  comment: string
+  resume_filename: string
+  status: 'processing' | 'completed' | 'failed'
+  error_message: string
+  match_score: number | null
+  fit_verdict: FitVerdict | null
+  screening_bucket: ScreeningBucket
+  is_top_resume: boolean
+  manual_override: boolean
+  system_recommended: boolean
+  created_at: string
+  processed_at: string | null
+  analysis: AnalysisResponse | null
+}

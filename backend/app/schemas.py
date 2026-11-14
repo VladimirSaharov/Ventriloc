@@ -183,3 +183,113 @@ class AnalysisResponse(BaseModel):
     document_warnings: list[str] = Field(default_factory=list)
     failed_vacancies: list[DocumentErrorInfo] = Field(default_factory=list)
     markdown_report: str = ""
+
+
+class AdminLoginRequest(BaseModel):
+    username: str
+    password: str
+
+
+class AdminLoginResponse(BaseModel):
+    access_token: str
+    token_type: str = "bearer"
+    username: str
+
+
+class PublicVacancyInfo(BaseModel):
+    id: str
+    title: str
+    filename: str
+
+
+class PublicApplyResponse(BaseModel):
+    submission_id: str
+    vacancy_id: str
+    vacancy_title: str
+    status: str
+    message: str
+
+
+class VacancyRecord(BaseModel):
+    id: str
+    filename: str
+    title: str
+    is_active: bool
+    created_at: str
+
+
+class VacancySummaryItem(BaseModel):
+    id: str
+    filename: str
+    title: str
+    is_active: bool
+    created_at: str
+    total_count: int
+    suitable_count: int
+    top_count: int
+    rejected_count: int
+    failed_count: int
+
+
+class VacancyToggleRequest(BaseModel):
+    is_active: bool
+
+
+class BucketOverrideRequest(BaseModel):
+    bucket: str  # "suitable" | "rejected"
+
+
+class VacancyCandidateItem(BaseModel):
+    id: str
+    vacancy_id: str
+    vacancy_title: str
+    candidate_label: str
+    contact_info: str
+    comment: str
+    resume_filename: str
+    status: str
+    error_message: str
+    match_score: Optional[float] = None
+    mandatory_score: float = 0.0
+    fit_verdict: Optional[FitVerdict] = None
+    screening_bucket: str
+    is_top_resume: bool
+    manual_override: bool
+    system_recommended: bool
+    target_role: str = ""
+    summary: str = ""
+    total_experience_months: Optional[int] = None
+    skills_preview: list[str] = Field(default_factory=list)
+    full_count: int = 0
+    partial_count: int = 0
+    not_specified_count: int = 0
+    no_match_count: int = 0
+    total_requirements: int = 0
+    created_at: str
+    processed_at: Optional[str] = None
+
+
+class HrVacancyCandidatesResponse(BaseModel):
+    vacancy: VacancySummaryItem
+    candidates: list[VacancyCandidateItem]
+
+
+class SubmissionDetailResponse(BaseModel):
+    id: str
+    vacancy_id: Optional[str] = None
+    vacancy_title: str = ""
+    candidate_label: str
+    contact_info: str
+    comment: str
+    resume_filename: str
+    status: str
+    error_message: str
+    match_score: Optional[float] = None
+    fit_verdict: Optional[FitVerdict] = None
+    screening_bucket: str = "suitable"
+    is_top_resume: bool = False
+    manual_override: bool = False
+    system_recommended: bool = False
+    created_at: str
+    processed_at: Optional[str] = None
+    analysis: Optional[AnalysisResponse] = None

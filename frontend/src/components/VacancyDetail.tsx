@@ -66,28 +66,30 @@ export function VacancyDetail({
             </p>
           </div>
 
-          <div className="nav-pill px-2 py-1.5 flex flex-wrap gap-1">
-            {vacancies.map((v) => {
-              const isCurr = v.vacancy.filename === active.vacancy.filename
-              return (
-                <button
-                  key={v.vacancy.filename}
-                  type="button"
-                  onClick={() => {
-                    onSelectVacancy(v.vacancy.filename)
-                    setStatusFilter('all')
-                  }}
-                  className={`px-4 py-1.5 rounded-[200px] text-[14px] font-editorial transition-colors cursor-pointer ${
-                    isCurr
-                      ? 'bg-[#202020] text-[#ffffff]'
-                      : 'text-[#202020] hover:bg-[#ffffff]/70'
-                  }`}
-                >
-                  #{v.rank} {v.vacancy.filename.replace(/\.docx$/i, '')}
-                </button>
-              )
-            })}
-          </div>
+          {vacancies.length > 1 && (
+            <div className="nav-pill px-2 py-1.5 flex flex-wrap gap-1">
+              {vacancies.map((v) => {
+                const isCurr = v.vacancy.filename === active.vacancy.filename
+                return (
+                  <button
+                    key={v.vacancy.filename}
+                    type="button"
+                    onClick={() => {
+                      onSelectVacancy(v.vacancy.filename)
+                      setStatusFilter('all')
+                    }}
+                    className={`px-4 py-1.5 rounded-[200px] text-[14px] font-editorial transition-colors cursor-pointer ${
+                      isCurr
+                        ? 'bg-[#202020] text-[#ffffff]'
+                        : 'text-[#202020] hover:bg-[#ffffff]/70'
+                    }`}
+                  >
+                    #{v.rank} {v.vacancy.filename.replace(/\.docx$/i, '')}
+                  </button>
+                )
+              })}
+            </div>
+          )}
         </div>
 
         {/* Status filters */}

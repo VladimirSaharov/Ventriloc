@@ -38,6 +38,11 @@ class Settings(BaseSettings):
     max_file_size_mb: int = 10
     max_document_chars: int = 45000
 
+    # Database & HR Admin Auth
+    database_path: str = ""
+    auth_secret_key: str = "ventriloc-hr-local-secret-change-me"
+    auth_token_ttl_hours: int = 24
+
     # Paths for built-in case samples
     case_samples_dir: str = ""
 
@@ -47,8 +52,15 @@ class Settings(BaseSettings):
         docker_samples = Path("/app/samples")
         if docker_samples.exists():
             return docker_samples
-        # Local repo root (two levels up from backend/app/config.py)
         return Path(__file__).resolve().parents[2]
+
+    def resolve_db_path(self) -> Path:
+        if self.database_path:
+            return Path(self.database_path)
+        docker_data = Path("/app/data")
+        if docker_data.exists():
+            return docker_data / "ventriloc_hr.db"
+        return Path(__file__).resolve().parents[1] / "data" / "ventriloc_hr.db"
 
 
 settings = Settings()

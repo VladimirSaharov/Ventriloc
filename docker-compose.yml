@@ -22,8 +22,11 @@ services:
       LLM_API_KEY: ${LLM_API_KEY:-}
       LLM_BASE_URL: ${LLM_BASE_URL:-https://api.openai.com/v1}
       LLM_MODEL: ${LLM_MODEL:-gpt-4o-mini}
+      DATABASE_PATH: /app/data/ventriloc_hr.db
+      AUTH_SECRET_KEY: ${AUTH_SECRET_KEY:-ventriloc-hr-local-secret-change-me}
       CASE_SAMPLES_DIR: /app
     volumes:
+      - hr_data:/app/data
       - "./4 резюме кондидатов:/app/samples/resumes:ro"
       - "./Вакансия 1.docx:/app/samples/vacancies/Вакансия 1.docx:ro"
       - "./Вакансия 2.docx:/app/samples/vacancies/Вакансия 2.docx:ro"
@@ -40,3 +43,6 @@ services:
     depends_on:
       - backend
     restart: unless-stopped
+
+volumes:
+  hr_data:
