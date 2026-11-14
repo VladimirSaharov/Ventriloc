@@ -1,0 +1,13 @@
+.git/
+.env
+.venv/
+**/__pycache__/
+**/*.pyc
+**/.pytest_cache/
+frontend/node_modules/
+frontend/dist/
+*.tsbuildinfo
+backend/tests/
+Описание кейса для участников.docx
+DESIGN (1).md
+~$*

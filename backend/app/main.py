@@ -178,3 +178,16 @@ async def analyze_resume(
     except Exception as exc:
         logger.exception("Unexpected error during analysis")
         raise HTTPException(status_code=500, detail=f"Внутренняя ошибка сервиса: {exc}") from exc
+
+
+# Serve built frontend assets when bundled in a single container (e.g. Fly.io)
+_static_candidates = (
+    Path("/app/static"),
+    Path(__file__).resolve().parent.parent.parent / "frontend" / "dist",
+)
+for _static_dir in _static_candidates:
+    if _static_dir.is_dir():
+        from fastapi.staticfiles import StaticFiles
+
+        app.mount("/", StaticFiles(directory=str(_static_dir), html=True), name="static")
+        break
