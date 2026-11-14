@@ -59,7 +59,7 @@ function formatDateTime(iso: string): string {
   }
 }
 
-export function HrDashboardPage({ username, health, onLogout }: HrDashboardPageProps) {
+export function HrDashboardPage({ username, onLogout }: HrDashboardPageProps) {
   // Level 1: Vacancies list
   const [vacancies, setVacancies] = useState<VacancySummaryItem[]>([])
   const [loadingVacancies, setLoadingVacancies] = useState(true)
@@ -131,6 +131,31 @@ export function HrDashboardPage({ username, health, onLogout }: HrDashboardPageP
   useEffect(() => {
     loadVacancies()
   }, [loadVacancies])
+
+  const hasPendingWork = useMemo(() => {
+    if (vacancies.some((v) => v.pending_count > 0)) return true
+    if (vacancyData?.candidates.some((c) => c.status === 'queued' || c.status === 'processing')) {
+      return true
+    }
+    if (selectedDetail?.status === 'queued' || selectedDetail?.status === 'processing') {
+      return true
+    }
+    return false
+  }, [vacancies, vacancyData, selectedDetail])
+
+  useEffect(() => {
+    if (!hasPendingWork) return
+    const timer = setInterval(() => {
+      loadVacancies()
+      if (selectedVacancyId) {
+        fetchHrVacancyCandidates(selectedVacancyId).then(setVacancyData).catch(() => {})
+      }
+      if (selectedDetail) {
+        fetchHrSubmissionDetail(selectedDetail.id).then(setSelectedDetail).catch(() => {})
+      }
+    }, 3000)
+    return () => clearInterval(timer)
+  }, [hasPendingWork, selectedVacancyId, selectedDetail, loadVacancies])
 
   const openVacancy = (vacancyId: string) => {
     setSelectedVacancyId(vacancyId)
@@ -275,17 +300,18 @@ export function HrDashboardPage({ username, health, onLogout }: HrDashboardPageP
     return vacancies.reduce(
       (acc, v) => {
         acc.total += v.total_count
+        acc.pending += v.pending_count
         acc.suitable += v.suitable_count
         acc.rejected += v.rejected_count
         if (v.is_active) acc.active += 1
         return acc
       },
-      { total: 0, suitable: 0, rejected: 0, active: 0 }
+      { total: 0, pending: 0, suitable: 0, rejected: 0, active: 0 }
     )
   }, [vacancies])
 
-  // Split candidates for selected vacancy into Suitable (Top >= 75% & Rest) and Rejected
-  const { suitableTop, suitableRest, rejectedList } = useMemo(() => {
+  // Split candidates for selected vacancy into Pending / Failed / Suitable (Top >= 75% & Rest) / Rejected
+  const { pendingList, failedList, suitableTop, suitableRest, rejectedList } = useMemo(() => {
     const all = vacancyData?.candidates || []
     const q = candSearch.trim().toLowerCase()
     const filtered = !q
@@ -298,10 +324,15 @@ export function HrDashboardPage({ username, health, onLogout }: HrDashboardPageP
             c.skills_preview.some((s) => s.toLowerCase().includes(q))
         )
 
-    const suitable = filtered.filter((c) => c.screening_bucket === 'suitable')
-    const rejected = filtered.filter((c) => c.screening_bucket === 'rejected')
+    const pending = filtered.filter((c) => c.status === 'queued' || c.status === 'processing')
+    const failed = filtered.filter((c) => c.status === 'failed')
+    const completed = filtered.filter((c) => c.status === 'completed')
+    const suitable = completed.filter((c) => c.screening_bucket === 'suitable')
+    const rejected = completed.filter((c) => c.screening_bucket === 'rejected')
 
     return {
+      pendingList: pending,
+      failedList: failed,
       suitableTop: suitable.filter((c) => c.is_top_resume),
       suitableRest: suitable.filter((c) => !c.is_top_resume),
       rejectedList: rejected,
@@ -337,13 +368,6 @@ export function HrDashboardPage({ username, health, onLogout }: HrDashboardPageP
                 ? vacancyData.vacancy.title
                 : 'Вакансии и отбор кандидатов'}
             </h1>
-            {health && (
-              <p className="text-[13px] text-[#828282] mt-1.5">
-                Модель анализа: <span className="text-[#202020]">{health.model}</span> ·
-                Порог отсева: <span className="text-[#202020]">&lt; 50%</span> · Топ резюме:{' '}
-                <span className="text-[#202020]">≥ 75%</span>
-              </p>
-            )}
           </div>
 
           <div className="flex flex-wrap items-center gap-3">
@@ -452,6 +476,55 @@ export function HrDashboardPage({ username, health, onLogout }: HrDashboardPageP
                 </button>
               </div>
             </div>
+
+            {pendingList.length > 0 && (
+              <div className="bg-[#ebe6dd] border-l-2 border-[#ff682c] px-5 py-4 flex flex-wrap items-center justify-between gap-3">
+                <div className="flex items-center gap-2.5 text-[14px] text-[#202020]">
+                  <RefreshCw className="w-4 h-4 text-[#ff682c] animate-spin" strokeWidth={1.75} />
+                  <span>
+                    В фоновой обработке резюме: <strong>{pendingList.length}</strong> (результат
+                    появится автоматически)
+                  </span>
+                </div>
+                <span className="text-[12px] text-[#816729]">
+                  {pendingList.map((p) => (blindMode ? `#${p.id.slice(0, 6)}` : p.candidate_label)).join(', ')}
+                </span>
+              </div>
+            )}
+
+            {failedList.length > 0 && (
+              <div className="bg-[#efefef] border-l-2 border-[#ff682c] px-5 py-4 flex flex-col gap-2">
+                <div className="text-[13px] font-medium text-[#ff682c]">
+                  Не удалось проанализировать ({failedList.length})
+                </div>
+                {failedList.map((f) => (
+                  <div key={f.id} className="flex flex-wrap items-center justify-between gap-3 text-[13px]">
+                    <span className="text-[#202020]">
+                      {blindMode ? `Кандидат #${f.id.slice(0, 6)}` : f.candidate_label} —{' '}
+                      <span className="text-[#828282]">{f.error_message || 'Ошибка анализа'}</span>
+                    </span>
+                    <div className="flex items-center gap-2">
+                      <button
+                        type="button"
+                        disabled={busyAction}
+                        onClick={() => handleReanalyze(f.id)}
+                        className="btn-ghost bg-[#ffffff] py-1 px-3 text-[12px]"
+                      >
+                        Перепроверить
+                      </button>
+                      <button
+                        type="button"
+                        disabled={busyAction}
+                        onClick={() => handleDeleteSubmission(f.id)}
+                        className="btn-ghost bg-[#ffffff] py-1 px-3 text-[12px] text-[#ff682c]"
+                      >
+                        Удалить
+                      </button>
+                    </div>
+                  </div>
+                ))}
+              </div>
+            )}
 
             {loadingCandidates ? (
               <div className="py-12 text-center text-[15px] text-[#828282]">
@@ -586,7 +659,9 @@ export function HrDashboardPage({ username, health, onLogout }: HrDashboardPageP
                 <div className="font-editorial text-[34px] leading-none text-[#202020] mt-2">
                   {globalTotals.total}
                 </div>
-                <div className="text-[12px] text-[#828282] mt-1">По всем вакансиям</div>
+                <div className="text-[12px] text-[#828282] mt-1">
+                  {globalTotals.pending > 0 ? `В проверке: ${globalTotals.pending}` : 'По всем вакансиям'}
+                </div>
               </div>
 
               <div className="bg-[#ebe6dd] card-asymmetric p-5">
@@ -741,8 +816,17 @@ export function HrDashboardPage({ username, health, onLogout }: HrDashboardPageP
                           <div className="font-medium text-[#202020]">{vac.title}</div>
                           <div className="text-[12px] text-[#828282] mt-0.5">{vac.filename}</div>
                         </td>
-                        <td className="py-4 px-4 text-center font-editorial text-[20px] text-[#202020]">
-                          {vac.total_count}
+                        <td className="py-4 px-4 text-center">
+                          <div className="inline-flex items-center gap-1.5">
+                            <span className="font-editorial text-[20px] text-[#202020]">
+                              {vac.total_count}
+                            </span>
+                            {vac.pending_count > 0 && (
+                              <span className="text-[11px] px-2 py-0.5 rounded-[200px] bg-[#ebe6dd] text-[#ff682c]">
+                                проверяется: {vac.pending_count}
+                              </span>
+                            )}
+                          </div>
                         </td>
                         <td className="py-4 px-4 text-center">
                           <div className="inline-flex items-center gap-1.5">

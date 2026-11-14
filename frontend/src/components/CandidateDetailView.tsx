@@ -121,7 +121,7 @@ export function CandidateDetailView({
               <div className="text-[12px] uppercase tracking-wider text-[#816729] font-editorial">
                 Вакансия: {detail.vacancy_title || 'Не указана'}
               </div>
-              <h1 className="text-[36px] md:text-[46px] leading-[1.04] tracking-[-0.02em] text-[#202020]">
+              <h1 className="text-[36px] md:text-[46px] leading-[1.06] text-[#202020]">
                 {displayTitle}
               </h1>
               {!blindMode && (

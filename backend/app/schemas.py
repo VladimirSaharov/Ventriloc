@@ -225,6 +225,7 @@ class VacancySummaryItem(BaseModel):
     is_active: bool
     created_at: str
     total_count: int
+    pending_count: int = 0
     suitable_count: int
     top_count: int
     rejected_count: int

@@ -202,6 +202,7 @@ export interface VacancySummaryItem {
   is_active: boolean
   created_at: string
   total_count: number
+  pending_count: number
   suitable_count: number
   top_count: number
   rejected_count: number
@@ -218,7 +219,7 @@ export interface VacancyCandidateItem {
   contact_info: string
   comment: string
   resume_filename: string
-  status: 'processing' | 'completed' | 'failed'
+  status: 'queued' | 'processing' | 'completed' | 'failed'
   error_message: string
   match_score: number | null
   mandatory_score: number
@@ -253,7 +254,7 @@ export interface SubmissionDetailResponse {
   contact_info: string
   comment: string
   resume_filename: string
-  status: 'processing' | 'completed' | 'failed'
+  status: 'queued' | 'processing' | 'completed' | 'failed'
   error_message: string
   match_score: number | null
   fit_verdict: FitVerdict | null

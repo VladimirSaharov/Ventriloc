@@ -1,5 +1,5 @@
 import { useEffect, useState } from 'react'
-import { CheckCircle2, ChevronDown, FileText, Loader2, ShieldCheck, Upload } from 'lucide-react'
+import { CheckCircle2, ChevronDown, FileText, Loader2, Upload } from 'lucide-react'
 import { fetchPublicOpenVacancies, submitPublicApplication } from '../api/client'
 import type { PublicApplyResponse, PublicVacancyInfo } from '../types'
 
@@ -57,58 +57,11 @@ export function CandidateApplyPage() {
             <span>Отклик без регистрации</span>
           </div>
 
-          <h1 className="text-[44px] md:text-[58px] leading-[0.94] tracking-[-0.03em] text-[#202020]">
+          <h1 className="text-[44px] md:text-[58px] leading-[0.98] text-[#202020]">
             Выберите вакансию и подайте резюме
           </h1>
 
-          <p className="text-[18px] leading-[1.38] text-[#4d4d4d]">
-            Регистрация и личный кабинет не требуются — выберите интересующую позицию, прикрепите
-            резюме и отправьте отклик HR-специалисту.
-          </p>
 
-          {openVacancies.length > 0 && (
-            <div className="bg-[#efefef] card-asymmetric p-7 flex flex-col gap-3 mt-2">
-              <div className="text-[12px] uppercase tracking-wider text-[#816729] font-editorial">
-                Доступные вакансии ({openVacancies.length})
-              </div>
-              <ul className="flex flex-col gap-2">
-                {openVacancies.map((v) => {
-                  const isSelected = v.id === selectedVacancyId
-                  return (
-                    <li key={v.id}>
-                      <button
-                        type="button"
-                        onClick={() => {
-                          setSelectedVacancyId(v.id)
-                          setSubmitted(null)
-                        }}
-                        className={`w-full text-left px-3.5 py-2.5 flex items-start gap-2.5 text-[14px] transition-colors cursor-pointer ${
-                          isSelected
-                            ? 'bg-[#ffffff] text-[#202020] border-l-2 border-[#ff682c]'
-                            : 'text-[#4d4d4d] hover:bg-[#ffffff]/60'
-                        }`}
-                      >
-                        <span
-                          className={`w-1.5 h-1.5 rounded-full mt-2 shrink-0 ${
-                            isSelected ? 'bg-[#ff682c]' : 'bg-[#828282]'
-                          }`}
-                        />
-                        <span>{v.title}</span>
-                      </button>
-                    </li>
-                  )
-                })}
-              </ul>
-            </div>
-          )}
-
-          <div className="flex items-start gap-2.5 text-[13px] text-[#828282] pt-2">
-            <ShieldCheck className="w-4 h-4 text-[#ff682c] shrink-0 mt-0.5" strokeWidth={1.5} />
-            <span>
-              Персональные данные (ФИО, контакты, ссылки, адрес) автоматически обезличиваются
-              перед ИИ-анализом.
-            </span>
-          </div>
         </div>
 
         {/* Right column: upload form or confirmation */}
@@ -133,7 +86,7 @@ export function CandidateApplyPage() {
                 </div>
                 <div>
                   <span className="text-[#828282]">Статус:</span>{' '}
-                  <span className="text-[#202020] font-medium">Принято в работу</span>
+                  <span className="text-[#202020] font-medium">Передано HR</span>
                 </div>
               </div>
               <div>
@@ -267,12 +220,10 @@ export function CandidateApplyPage() {
                   className="btn-primary inline-flex items-center gap-2 disabled:opacity-50"
                 >
                   {submitting && <Loader2 className="w-4 h-4 animate-spin" strokeWidth={1.75} />}
-                  {submitting ? 'Отправка и проверка резюме...' : 'Отправить резюме'}
+                  {submitting ? 'Отправка резюме...' : 'Отправить резюме'}
                 </button>
                 <span className="text-[12px] text-[#828282]">
-                  {submitting
-                    ? 'Сравниваем резюме с требованиями выбранной вакансии...'
-                    : 'Проверка занимает несколько секунд'}
+                  {submitting ? 'Загружаем файл...' : 'Мгновенная отправка без ожидания проверки'}
                 </span>
               </div>
             </form>

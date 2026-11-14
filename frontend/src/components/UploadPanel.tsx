@@ -56,7 +56,7 @@ export function UploadPanel({
             <span>Объективный подбор по фактам резюме и вакансий</span>
           </div>
 
-          <h1 className="text-[44px] md:text-[56px] leading-[0.95] tracking-[-0.03em] text-[#202020]">
+          <h1 className="text-[44px] md:text-[56px] leading-[0.98] text-[#202020]">
             Сравнительный анализ резюме и вакансий
           </h1>
 

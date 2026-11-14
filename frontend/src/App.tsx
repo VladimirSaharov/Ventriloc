@@ -1,5 +1,4 @@
 import { useEffect, useState } from 'react'
-import { ShieldCheck } from 'lucide-react'
 import { clearHrToken, fetchHealth, fetchHrMe, getHrToken } from './api/client'
 import { CandidateApplyPage } from './components/CandidateApplyPage'
 import { HrDashboardPage } from './components/HrDashboardPage'
@@ -88,15 +87,6 @@ export function App() {
             </button>
           </nav>
 
-          <div className="flex items-center gap-4">
-            <span className="hidden sm:inline-flex items-center gap-1.5 text-[13px] text-[#4d4d4d]">
-              <ShieldCheck className="w-4 h-4 text-[#ff682c]" strokeWidth={1.5} />
-              PII Shield
-            </span>
-            <span className="hidden md:inline text-[13px] text-[#828282] font-editorial">
-              {health ? `${health.llm_provider.toUpperCase()} · ${health.model}` : 'Подключение...'}
-            </span>
-          </div>
         </div>
       </header>
 
@@ -122,16 +112,6 @@ export function App() {
         )}
       </main>
 
-      <footer className="bg-[#ffffff] border-t border-[#e8e8e8] py-8">
-        <div className="max-w-[1200px] mx-auto px-6 flex flex-wrap items-center justify-between gap-4 text-[13px] text-[#828282]">
-          <span className="font-editorial">
-            Задача 3 · Сравнительный анализ резюме и вакансий
-          </span>
-          <span>
-            Во внешние API передаются только обезличенные тексты без персональных данных.
-          </span>
-        </div>
-      </footer>
     </div>
   )
 }

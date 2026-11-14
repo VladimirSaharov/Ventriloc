@@ -41,10 +41,6 @@ export function HrLoginForm({ onSuccess }: HrLoginFormProps) {
             <h1 className="text-[32px] leading-[1.12] text-[#202020] mt-2">
               Вход в кабинет HR
             </h1>
-            <p className="text-[14px] text-[#4d4d4d] mt-2 leading-[1.45]">
-              Доступ к сводной матрице откликов, детальному разбору кандидатов и управлению
-              вакансиями.
-            </p>
           </div>
 
           <div className="flex flex-col gap-2">
@@ -93,9 +89,6 @@ export function HrLoginForm({ onSuccess }: HrLoginFormProps) {
             >
               {loading ? 'Проверка...' : 'Войти'}
             </button>
-            <span className="text-[12px] text-[#828282]">
-              Хешированная проверка по БД
-            </span>
           </div>
         </form>
       </div>

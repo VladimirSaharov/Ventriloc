@@ -24,6 +24,7 @@ from app.db import (
     list_vacancies,
     list_vacancies_with_counts,
     list_vacancy_submissions,
+    reset_submission_to_queued,
     set_submission_bucket,
     set_vacancy_active,
 )
@@ -45,7 +46,7 @@ from app.services.llm_client import LLMClientError
 from app.services.parser import SUPPORTED_EXTENSIONS, parse_document_bytes
 from app.services.pii_redactor import redact_pii
 from app.services.pipeline import run_analysis_pipeline
-from app.services.worker import analyze_submission_sync
+from app.services.worker import submission_worker
 
 logging.basicConfig(level=logging.INFO)
 logger = logging.getLogger(__name__)
@@ -54,7 +55,9 @@ logger = logging.getLogger(__name__)
 @asynccontextmanager
 async def lifespan(_: FastAPI):
     init_db()
+    submission_worker.start()
     yield
+    await submission_worker.stop()
 
 
 app = FastAPI(
@@ -185,28 +188,14 @@ async def submit_candidate_resume(
         contact_info=contact,
         comment=comment,
     )
-
-    try:
-        await analyze_submission_sync(sub_id)
-    except ValueError as exc:
-        raise HTTPException(status_code=400, detail=str(exc)) from exc
-    except LLMClientError as exc:
-        raise HTTPException(
-            status_code=502,
-            detail=f"Сервис анализа временно недоступен: {exc}. Попробуйте отправить резюме чуть позже.",
-        ) from exc
-    except Exception as exc:
-        raise HTTPException(
-            status_code=500,
-            detail=f"Не удалось обработать отклик: {exc}",
-        ) from exc
+    submission_worker.enqueue(sub_id)
 
     return PublicApplyResponse(
         submission_id=sub_id,
         vacancy_id=vacancy["id"],
         vacancy_title=vacancy["title"],
-        status="completed",
-        message="Резюме отправлено и принято в работу. HR-специалист рассмотрит ваш отклик.",
+        status="queued",
+        message="Резюме успешно отправлено! HR-специалист рассмотрит ваш отклик в ближайшее время.",
     )
 
 
@@ -304,16 +293,10 @@ async def override_submission_bucket(
 
 @app.post("/api/hr/submissions/{submission_id}/reanalyze")
 async def reanalyze_submission(submission_id: str, _: str = Depends(require_hr_admin)):
-    row = get_submission_raw(submission_id)
-    if not row:
+    if not reset_submission_to_queued(submission_id):
         raise HTTPException(status_code=404, detail="Отклик не найден.")
-    try:
-        await analyze_submission_sync(submission_id)
-    except LLMClientError as exc:
-        raise HTTPException(status_code=502, detail=str(exc)) from exc
-    except Exception as exc:
-        raise HTTPException(status_code=500, detail=str(exc)) from exc
-    return {"status": "completed", "submission_id": submission_id}
+    submission_worker.enqueue(submission_id)
+    return {"status": "queued", "submission_id": submission_id}
 
 
 @app.delete("/api/hr/submissions/{submission_id}")

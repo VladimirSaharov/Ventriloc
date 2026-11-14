@@ -249,6 +249,7 @@ def list_vacancies_with_counts(active_only: bool = False) -> list[dict[str, Any]
                 v.is_active,
                 v.created_at,
                 COUNT(s.id) AS total_count,
+                SUM(CASE WHEN s.status IN ('queued', 'processing') THEN 1 ELSE 0 END) AS pending_count,
                 SUM(CASE WHEN s.status = 'completed' AND s.screening_bucket = 'suitable' THEN 1 ELSE 0 END) AS suitable_count,
                 SUM(CASE WHEN s.status = 'completed' AND s.screening_bucket = 'suitable' AND s.is_top_resume = 1 THEN 1 ELSE 0 END) AS top_count,
                 SUM(CASE WHEN s.status = 'completed' AND s.screening_bucket = 'rejected' THEN 1 ELSE 0 END) AS rejected_count,
@@ -269,6 +270,7 @@ def list_vacancies_with_counts(active_only: bool = False) -> list[dict[str, Any]
             "is_active": bool(r["is_active"]),
             "created_at": r["created_at"],
             "total_count": int(r["total_count"] or 0),
+            "pending_count": int(r["pending_count"] or 0),
             "suitable_count": int(r["suitable_count"] or 0),
             "top_count": int(r["top_count"] or 0),
             "rejected_count": int(r["rejected_count"] or 0),
@@ -362,7 +364,7 @@ def create_submission_record(
                 id, vacancy_id, vacancy_filename, vacancy_title,
                 candidate_label, contact_info, comment,
                 resume_filename, resume_bytes, status, error_message, created_at
-            ) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, 'processing', '', ?)
+            ) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, 'queued', '', ?)
             """,
             (
                 sub_id,
@@ -378,6 +380,31 @@ def create_submission_record(
             ),
         )
     return sub_id
+
+
+def mark_submission_processing(submission_id: str) -> None:
+    with get_conn() as conn:
+        conn.execute(
+            "UPDATE submissions SET status = 'processing', error_message = '' WHERE id = ?",
+            (submission_id,),
+        )
+
+
+def reset_submission_to_queued(submission_id: str) -> bool:
+    with get_conn() as conn:
+        cur = conn.execute(
+            "UPDATE submissions SET status = 'queued', error_message = '' WHERE id = ?",
+            (submission_id,),
+        )
+        return cur.rowcount > 0
+
+
+def list_pending_submission_ids() -> list[str]:
+    with get_conn() as conn:
+        rows = conn.execute(
+            "SELECT id FROM submissions WHERE status IN ('queued', 'processing') ORDER BY created_at ASC"
+        ).fetchall()
+    return [r["id"] for r in rows]
 
 
 def complete_submission_analysis(submission_id: str, analysis_dict: dict[str, Any]) -> None:
